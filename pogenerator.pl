@@ -3,6 +3,7 @@ use utf8;
 use strict;
 use Data::Dumper qw(Dumper);
 use List::MoreUtils qw(uniq);
+use Locale::Language;
 
 use File::Find::Rule;
 use Cwd 'abs_path';
@@ -18,17 +19,34 @@ for ($current_path){
 }
 
 my $step_file_name = shift;
+my $language_code = shift;
 
-#In order to generate the po file from a choosen step, the file of the step needs to be oppened
-#its prefix is the unique file name
-#so, lets extract the prefix
+if (not defined $language_code){
+  print "Error: choose a language ISO 622 code\n";
+  exit;
+}
+
+if ($language_code eq 'list'){
+  print Dumper \all_language_codes();
+  print Dumper \all_language_names();
+  exit;
+}
+
+
+my $language_name = code2language($language_code);
+
+
+
+#In order to generate the po file from a choosen step, the file of the step
+#needs to be oppened. Its prefix is the unique file name, so lets extract the
+#prefix
 my $step_prefix = $step_file_name;
 
 for ($step_prefix){
   s/\_.+//;
 }
 
-#check the given file name is in fact inside the project steps directory
+#Check the given file name is in fact inside the project steps directory
 my $steps_full_path_name = $current_path.'/tests/projects/' . $step_prefix . '/step_definitions/' . $step_file_name;
 
 print $steps_full_path_name . "\n";
@@ -56,7 +74,7 @@ my @msgid;
 my @msgid_fields;
 
 foreach my $line (@lines){
-  if ($line !~ /^#|^\s/){
+  if (($line !~ /^#|^\s/) and ($line =~ /\/.+\//)){
     if ($line =~ /\/.+\//){
       for ($line){
         s/.+\^//;
@@ -64,11 +82,9 @@ foreach my $line (@lines){
       }
       if ($line !~ /'/){
         chop($line);
-        print 'sem argumento: ' . $line . "\n";
         push @msgid, $line;
       }
       else{
-        print 'com argumento: ' . $line . "\n";
         chop($line);
         push @msgid_fields, split /'.+'/, $line;
       }
@@ -78,4 +94,6 @@ foreach my $line (@lines){
 my @msgid_merge = (@msgid,@msgid_fields);
 
 my @unique_ids = uniq @msgid_merge;
+print "# $language_name translation of $step_file_name\n";
+
 print Dumper \@unique_ids;
