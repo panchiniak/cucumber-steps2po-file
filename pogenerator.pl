@@ -39,8 +39,6 @@ if ($language_code eq 'list'){
   foreach my $language (@language_codes) {
     print $language . " - " . code2language($language) . "\n" ;
   }
-  # print Dumper \all_language_codes();
-  # print Dumper \all_language_names();
   exit;
 }
 
