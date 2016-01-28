@@ -97,3 +97,12 @@ my @unique_ids = uniq @msgid_merge;
 print "# $language_name translation of $step_file_name\n";
 
 print Dumper \@unique_ids;
+
+__END__
+=head1 Pogenerator
+Generates PO files for the i18n of cucumber step files
+=head1 SYNOPSIS
+perl -f pogenerator.pl [step file] [language code]
+=head1 DESCRIPTION
+B<This program> will read the given input file(s) and write out a po files.
+=cut
