@@ -21,6 +21,12 @@ for ($current_path){
 my $step_file_name = shift;
 my $language_code = shift;
 
+my $po_file_name = $step_file_name;
+for ($po_file_name){
+  s/\..+/\.po/;
+  s/^/$language_code\_/;
+}
+
 if (not defined $language_code){
   print "Error: choose a language ISO 622 code\n";
   exit;
@@ -32,10 +38,7 @@ if ($language_code eq 'list'){
   exit;
 }
 
-
 my $language_name = code2language($language_code);
-
-
 
 #In order to generate the po file from a choosen step, the file of the step
 #needs to be oppened. Its prefix is the unique file name, so lets extract the
@@ -92,11 +95,25 @@ foreach my $line (@lines){
   }
 }
 my @msgid_merge = (@msgid,@msgid_fields);
-
 my @unique_ids = uniq @msgid_merge;
-print "# $language_name translation of $step_file_name\n";
+my $po_directory = $steps_full_path_name;
 
-print Dumper \@unique_ids;
+for ($po_directory){
+  s/$step_file_name/i18n/;
+}
+
+open my $po_content, '>', $po_directory . "/" . $po_file_name or die "Can't write file.\n";
+
+print $po_content "# $language_name translation of $step_file_name\n";
+foreach my $id (@unique_ids){
+  print $po_content 'msgid "' . $id . '"' . "\n";
+  print $po_content 'msgstr ""' . "\n";
+}
+
+if (close $po_content){
+  print "File succefully written.\n";
+};
+
 
 __END__
 =head1 Pogenerator
