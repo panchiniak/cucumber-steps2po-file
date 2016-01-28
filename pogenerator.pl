@@ -4,6 +4,7 @@ use strict;
 use Data::Dumper qw(Dumper);
 use List::MoreUtils qw(uniq);
 use Locale::Language;
+use File::Copy;
 
 use File::Find::Rule;
 use Cwd 'abs_path';
@@ -12,12 +13,6 @@ use Cwd 'abs_path';
 my $step_file_name = shift;
 my $language_code = shift;
 my $apply_mode = shift;
-
-if ($apply_mode eq = "apply"){
-  print "Translation will be applyed\n";
-  exit;
-}
-
 
 my $current_path = abs_path($0);
 my $current_file_name = $0;
@@ -71,9 +66,29 @@ for ($step_prefix){
 my $steps_full_path_name = $current_path.'/tests/projects/' . $step_prefix . '/step_definitions/' . $step_file_name;
 
 if (not -e $steps_full_path_name){
-  print 'Error: origin file does not exist' . "\n";
+  print 'Error: file does not exist' . "\n";
   exit;
 }
+
+
+if (defined $apply_mode and $apply_mode eq "apply"){
+  print "Translation will be applyed\n";
+  #In order to apply the translation, we need first assure the current step file
+  #in use corresponds to the source default file.
+  #For doing so, the current file gets replaced by the one at src directory.
+  my $full_path_source_file = $current_path . "/.tests/src/projects/" . $step_prefix . "/step_definitions/$step_file_name";
+  copy($full_path_source_file,$steps_full_path_name) or die "Copy failed: $!";
+
+  #Now each msgstr from the PO file will be replaced in the steps file by its
+  #msgid match. For doing so, first we need to check the PO file for the step
+  #exists, and if it is prefixed with the desired language. We do just just
+  #by opening it in the read mode.
+  print $language_code;
+
+  exit;
+}
+
+
 
 open (FH, "< $steps_full_path_name") or die "Can't open $steps_full_path_name for read: $!";
 my @lines = <FH>;
