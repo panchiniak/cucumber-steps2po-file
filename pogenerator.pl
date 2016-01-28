@@ -8,6 +8,17 @@ use Locale::Language;
 use File::Find::Rule;
 use Cwd 'abs_path';
 
+
+my $step_file_name = shift;
+my $language_code = shift;
+my $apply_mode = shift;
+
+if ($apply_mode eq = "apply"){
+  print "Translation will be applyed\n";
+  exit;
+}
+
+
 my $current_path = abs_path($0);
 my $current_file_name = $0;
 
@@ -18,8 +29,6 @@ for ($current_path){
   s/\/.tests\/inc\/cucumber-steps2po-file\/$current_file_name\.pl//;
 }
 
-my $step_file_name = shift;
-my $language_code = shift;
 
 my $po_file_name = $step_file_name;
 for ($po_file_name){
