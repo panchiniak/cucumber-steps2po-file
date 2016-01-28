@@ -33,12 +33,23 @@ if (not defined $language_code){
 }
 
 if ($language_code eq 'list'){
-  print Dumper \all_language_codes();
-  print Dumper \all_language_names();
+  my @language_codes = all_language_codes();
+  my @language_names = all_language_names();
+
+  foreach my $language (@language_codes) {
+    print $language . " - " . code2language($language) . "\n" ;
+  }
+  # print Dumper \all_language_codes();
+  # print Dumper \all_language_names();
   exit;
 }
 
 my $language_name = code2language($language_code);
+
+if (!defined $language_name){
+  print "Error: language code not found. Use [list] to see all codes available.\n";
+  exit;
+}
 
 #In order to generate the po file from a choosen step, the file of the step
 #needs to be oppened. Its prefix is the unique file name, so lets extract the
@@ -52,24 +63,16 @@ for ($step_prefix){
 #Check the given file name is in fact inside the project steps directory
 my $steps_full_path_name = $current_path.'/tests/projects/' . $step_prefix . '/step_definitions/' . $step_file_name;
 
-print $steps_full_path_name . "\n";
-if (-e $steps_full_path_name){
-  print 'File exists' . "\n";
-
-}
-else{
-  print 'Error: File does not exist' . "\n";
+if (not -e $steps_full_path_name){
+  print 'Error: origin file does not exist' . "\n";
   exit;
 }
 
 open (FH, "< $steps_full_path_name") or die "Can't open $steps_full_path_name for read: $!";
 my @lines = <FH>;
 
-if ($lines[0] eq "#encoding: utf-8\n"){
-  print "Enconding: ok\n";
-}
-else{
-  print "Error: wrong encoding: ok\n";
+if (not $lines[0] eq "#encoding: utf-8\n"){
+  print "Error: wrong encoding\n";
   exit;
 }
 
@@ -110,8 +113,10 @@ foreach my $id (@unique_ids){
   print $po_content 'msgstr ""' . "\n";
 }
 
+my $number_entries = scalar @unique_ids;
+
 if (close $po_content){
-  print "File succefully written.\n";
+  print "File $po_file_name succefully written with $number_entries entries.\n";
 };
 
 
@@ -119,7 +124,10 @@ __END__
 =head1 Pogenerator
 Generates PO files for the i18n of cucumber step files
 =head1 SYNOPSIS
-perl -f pogenerator.pl [step file] [language code]
+perl -f pogenerator.pl [step file] [language code | list]
+Options:
+ list            list of language codes available
+
 =head1 DESCRIPTION
 B<This program> will read the given input file(s) and write out a po files.
 =cut
