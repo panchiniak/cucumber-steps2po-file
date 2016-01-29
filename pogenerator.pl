@@ -94,7 +94,12 @@ if (defined $apply_mode and $apply_mode eq "apply"){
   open (FH, "< $po_directory/$po_file_name") or die "Can't open $steps_full_path_name for read: $!";
   my @po_lines = <FH>;
 
+  open my $in,  '<',  $steps_full_path_name      or die "Can't read old file: $!";
+  open my $out, '>', "$steps_full_path_name.new" or die "Can't write new file: $!";
+
+
   # print Dumper \@po_lines;
+  my %translation_of;
 
   my $po_lines_index = 0;
   foreach my $po_line (@po_lines){
@@ -116,8 +121,7 @@ if (defined $apply_mode and $apply_mode eq "apply"){
       }
       chomp ($po_lines[$po_lines_index + 1]);
 
-      print $po_line. '|' . $po_lines[$po_lines_index + 1] . "\n";
-
+      $translation_of{$po_line} = $po_lines[$po_lines_index + 1];
 
       # while( <$in> )
       #   {
@@ -126,18 +130,40 @@ if (defined $apply_mode and $apply_mode eq "apply"){
       #   }
       # close $out;
 
-
-
-
     }
     $po_lines_index++;
 
     # print $po_line;
   }
 
-    open my $in,  '<',  $steps_full_path_name      or die "Can't read old file: $!";
-    open my $out, '>', "$steps_full_path_name.new" or die "Can't write new file: $!";
+  print Dumper \%translation_of;
 
+  while(<$in>){
+    foreach my $translated_key (keys %translation_of) {
+      if (($_ !~ /^#|^\s/) and ($_ =~ /\/.+\//)){
+        if ($_ =~ /$translated_key/){
+          print "----------MATCH!!!!!----------\n";
+          print $translated_key . "\n";
+          print $translation_of{$translated_key} . "\n";
+          print $_ . "\n";
+          for ($_){
+            s/$translated_key/$translation_of{$translated_key}/;
+          }
+          print $_ . "\n";
+          print $. . "\n";
+
+        }
+        # print $translated_key . "\n";
+        # print $_ . "\n";
+        # print $. . "\n";
+      }
+
+    }
+    # print $out $_;
+    # print $. . "\n";
+  }
+
+  close $out;
 
   exit;
 }
