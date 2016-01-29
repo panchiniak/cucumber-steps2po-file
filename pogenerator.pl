@@ -70,6 +70,13 @@ if (not -e $steps_full_path_name){
   exit;
 }
 
+my $po_directory = $steps_full_path_name;
+
+for ($po_directory){
+  s/$step_file_name/i18n/;
+}
+
+
 
 if (defined $apply_mode and $apply_mode eq "apply"){
   print "Translation will be applyed\n";
@@ -83,7 +90,54 @@ if (defined $apply_mode and $apply_mode eq "apply"){
   #msgid match. For doing so, first we need to check the PO file for the step
   #exists, and if it is prefixed with the desired language. We do just just
   #by opening it in the read mode.
-  print $language_code;
+
+  open (FH, "< $po_directory/$po_file_name") or die "Can't open $steps_full_path_name for read: $!";
+  my @po_lines = <FH>;
+
+  # print Dumper \@po_lines;
+
+  my $po_lines_index = 0;
+  foreach my $po_line (@po_lines){
+    if ($po_line =~ /^msgid/){
+
+      for ($po_line){
+        s/^msgid "//;
+        s/"$//;
+        s/^[\s]+//;
+        s/[\s]+$//;
+      }
+      chomp($po_line);
+
+      for ($po_lines[$po_lines_index + 1]){
+        s/^msgstr "//;
+        s/"$//;
+        s/^[\s]+//;
+        s/[\s]+$//;
+      }
+      chomp ($po_lines[$po_lines_index + 1]);
+
+      print $po_line. '|' . $po_lines[$po_lines_index + 1] . "\n";
+
+
+      # while( <$in> )
+      #   {
+      #     s/\b(perl)\b/Perl/g;
+      #     print $out $_;
+      #   }
+      # close $out;
+
+
+
+
+    }
+    $po_lines_index++;
+
+    # print $po_line;
+  }
+
+    open my $in,  '<',  $steps_full_path_name      or die "Can't read old file: $!";
+    open my $out, '>', "$steps_full_path_name.new" or die "Can't write new file: $!";
+
 
   exit;
 }
@@ -121,11 +175,11 @@ foreach my $line (@lines){
 }
 my @msgid_merge = (@msgid,@msgid_fields);
 my @unique_ids = uniq @msgid_merge;
-my $po_directory = $steps_full_path_name;
-
-for ($po_directory){
-  s/$step_file_name/i18n/;
-}
+# my $po_directory = $steps_full_path_name;
+#
+# for ($po_directory){
+#   s/$step_file_name/i18n/;
+# }
 
 open my $po_content, '>', $po_directory . "/" . $po_file_name or die "Can't write file.\n";
 
