@@ -152,13 +152,26 @@ if (defined $apply_mode and $apply_mode eq "apply"){
 
   while(<$in>){
     my $flag = 1;
+    my $last_translated_line;
     foreach my $translated_key (sort {length($b) <=> length($a)} keys %translation_of) {
       if (($_ !~ /^#|^\s/) and ($_ =~ /\/.+\//)){
 
+        my $current_line = $.;
+        print $current_line . "\n";
+
         my $translation_result = i18n_replace($translated_key, $translation_of{$translated_key}, $_, $.);
+
         if ($translation_result){
+          print $. . "\n";
           print $out $translation_result;
           $flag = 0;
+
+          if ($current_line == $last_translated_line){
+            #remove line above the current line
+            print "----------LINHA REPETIDA: $current_line -----------\n";
+          }
+          $last_translated_line = $current_line;
+
         }
       }
     }
