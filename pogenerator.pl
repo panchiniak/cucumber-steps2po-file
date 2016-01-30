@@ -76,8 +76,6 @@ for ($po_directory){
   s/$step_file_name/i18n/;
 }
 
-
-
 if (defined $apply_mode and $apply_mode eq "apply"){
   print "Translation will be applyed\n";
   #In order to apply the translation, we need first assure the current step file
@@ -123,36 +121,43 @@ if (defined $apply_mode and $apply_mode eq "apply"){
 
       $translation_of{$po_line} = $po_lines[$po_lines_index + 1];
 
-      # while( <$in> )
-      #   {
-      #     s/\b(perl)\b/Perl/g;
-      #     print $out $_;
-      #   }
-      # close $out;
-
     }
     $po_lines_index++;
 
-    # print $po_line;
   }
 
-  # print Dumper \%translation_of;
+  sub i18n_replace {
+    my ($source) = $_[0];
+    my ($translation) = $_[1];
+    my ($string) = $_[2];
+    my ($line_number) = $_[3];
+
+    print $source . "\n";
+    print $string;
+
+    if ($string =~ /$source/ ){
+      for ($string){
+        s/$source/$translation/;
+      }
+      print "----------------match--------------\n";
+      $_[2] = $string;
+      return $string;
+    }
+    else{
+      print "----------------SEM match--------------\n";
+      return 0;
+    }
+
+  }
 
   while(<$in>){
     my $flag = 1;
     foreach my $translated_key (sort {length($b) <=> length($a)} keys %translation_of) {
       if (($_ !~ /^#|^\s/) and ($_ =~ /\/.+\//)){
-        if ($_ =~ /$translated_key/){
-          print "----------MATCH!!!!!----------\n";
-          print $translated_key . "\n";
-          print $translation_of{$translated_key} . "\n";
-          print $_ . "\n";
-          for ($_){
-            s/$translated_key/$translation_of{$translated_key}/;
-          }
-          print $_ . "\n";
-          print $. . "\n";
-          print $out $_;
+
+        my $translation_result = i18n_replace($translated_key, $translation_of{$translated_key}, $_, $.);
+        if ($translation_result){
+          print $out $translation_result;
           $flag = 0;
         }
       }
@@ -160,8 +165,6 @@ if (defined $apply_mode and $apply_mode eq "apply"){
     if ($flag == 1){
       print $out $_;
     }
-
-    # print $out $_;
   }
   close $out;
   exit;
@@ -200,11 +203,6 @@ foreach my $line (@lines){
 }
 my @msgid_merge = (@msgid,@msgid_fields);
 my @unique_ids = uniq @msgid_merge;
-# my $po_directory = $steps_full_path_name;
-#
-# for ($po_directory){
-#   s/$step_file_name/i18n/;
-# }
 
 open my $po_content, '>', $po_directory . "/" . $po_file_name or die "Can't write file.\n";
 
