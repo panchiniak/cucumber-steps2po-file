@@ -136,10 +136,11 @@ if (defined $apply_mode and $apply_mode eq "apply"){
     # print $po_line;
   }
 
-  print Dumper \%translation_of;
+  # print Dumper \%translation_of;
 
   while(<$in>){
-    foreach my $translated_key (keys %translation_of) {
+    my $flag = 1;
+    foreach my $translated_key (sort {length($b) <=> length($a)} keys %translation_of) {
       if (($_ !~ /^#|^\s/) and ($_ =~ /\/.+\//)){
         if ($_ =~ /$translated_key/){
           print "----------MATCH!!!!!----------\n";
@@ -151,20 +152,18 @@ if (defined $apply_mode and $apply_mode eq "apply"){
           }
           print $_ . "\n";
           print $. . "\n";
-
+          print $out $_;
+          $flag = 0;
         }
-        # print $translated_key . "\n";
-        # print $_ . "\n";
-        # print $. . "\n";
       }
-
     }
+    if ($flag == 1){
+      print $out $_;
+    }
+
     # print $out $_;
-    # print $. . "\n";
   }
-
   close $out;
-
   exit;
 }
 
