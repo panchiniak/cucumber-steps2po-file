@@ -5,6 +5,8 @@ use Data::Dumper qw(Dumper);
 use List::MoreUtils qw(uniq);
 use Locale::Language;
 use File::Copy;
+use Tie::File;
+
 
 use File::Find::Rule;
 use Cwd 'abs_path';
@@ -126,6 +128,11 @@ if (defined $apply_mode and $apply_mode eq "apply"){
 
   }
 
+  sub remove_line_number{
+    my ($line_tobe_removed_number) = $_[0];
+
+  }
+
   sub i18n_replace {
     my ($source) = $_[0];
     my ($translation) = $_[1];
@@ -168,6 +175,9 @@ if (defined $apply_mode and $apply_mode eq "apply"){
 
           if ($current_line == $last_translated_line){
             #remove line above the current line
+
+            remove_line_number($current_line);
+
             print "----------LINHA REPETIDA: $current_line -----------\n";
           }
           $last_translated_line = $current_line;
