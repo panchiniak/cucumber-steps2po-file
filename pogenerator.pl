@@ -5,8 +5,6 @@ use Data::Dumper qw(Dumper);
 use List::MoreUtils qw(uniq);
 use Locale::Language;
 use File::Copy;
-use Tie::File;
-
 
 use File::Find::Rule;
 use Cwd 'abs_path';
@@ -15,6 +13,8 @@ use Cwd 'abs_path';
 my $step_file_name = shift;
 my $language_code = shift;
 my $apply_mode = shift;
+
+my @lines_tobe_removed;
 
 my $current_path = abs_path($0);
 my $current_file_name = $0;
@@ -95,7 +95,7 @@ if (defined $apply_mode and $apply_mode eq "apply"){
   my @po_lines = <FH>;
 
   open my $in,  '<',  $steps_full_path_name      or die "Can't read old file: $!";
-  open my $out, '>', "$steps_full_path_name.new" or die "Can't write new file: $!";
+  open my $out, '+>', "$steps_full_path_name.new" or die "Can't write new file: $!";
 
 
   # print Dumper \@po_lines;
@@ -128,8 +128,14 @@ if (defined $apply_mode and $apply_mode eq "apply"){
 
   }
 
+
   sub remove_line_number{
     my ($line_tobe_removed_number) = $_[0];
+    print "--------------REMOCAO: $line_tobe_removed_number -----------------\n";
+    #flag line to be removed
+
+    push @lines_tobe_removed, $line_tobe_removed_number;
+    # print Dumper \@file_lines;
 
   }
 
@@ -159,7 +165,7 @@ if (defined $apply_mode and $apply_mode eq "apply"){
 
   while(<$in>){
     my $flag = 1;
-    my $last_translated_line;
+    my $last_translated_line = 0;
     foreach my $translated_key (sort {length($b) <=> length($a)} keys %translation_of) {
       if (($_ !~ /^#|^\s/) and ($_ =~ /\/.+\//)){
 
@@ -176,9 +182,11 @@ if (defined $apply_mode and $apply_mode eq "apply"){
           if ($current_line == $last_translated_line){
             #remove line above the current line
 
+            print "----------LINHA REPETIDA: $current_line -----------\n";
+
             remove_line_number($current_line);
 
-            print "----------LINHA REPETIDA: $current_line -----------\n";
+            # print "----------LINHA REPETIDA: $current_line -----------\n";
           }
           $last_translated_line = $current_line;
 
@@ -190,6 +198,10 @@ if (defined $apply_mode and $apply_mode eq "apply"){
     }
   }
   close $out;
+
+  print Dumper \@lines_tobe_removed;
+  
+
   exit;
 }
 
@@ -240,6 +252,8 @@ my $number_entries = scalar @unique_ids;
 if (close $po_content){
   print "File $po_file_name succefully written with $number_entries entries.\n";
 };
+
+
 
 
 __END__
