@@ -233,7 +233,8 @@ foreach my $line (@lines){
       }
       else{
         chop($line);
-        push @msgid_fields, split /'.+'/, $line;
+        #@TODO: following split should be broader, not only for '(.+)'
+        push @msgid_fields, split /\'\(\.\+\)\'/, $line;
       }
     }
   }
