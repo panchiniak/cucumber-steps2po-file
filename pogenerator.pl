@@ -185,8 +185,6 @@ if (defined $apply_mode and $apply_mode eq "apply"){
   }
   close $out;
 
-  print Dumper \@lines_tobe_removed;
-
   my @records;
   tie @records, 'Tie::File', "$steps_full_path_name.new";
 
