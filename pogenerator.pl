@@ -1,5 +1,6 @@
-#!/usr/bin/perl -w
-use utf8;
+package Text::Statistics::Latin;
+
+use warnings;
 use strict;
 use Data::Dumper qw(Dumper);
 use List::MoreUtils qw(uniq);
@@ -16,14 +17,11 @@ my $apply_mode = shift;
 
 my @lines_tobe_removed;
 
-my $current_path = abs_path($0);
-my $current_file_name = $0;
+my $current_path = abs_path(__FILE__);
+my $current_file_name = __FILE__;
 
-for ($current_file_name){
-  s/\..+//;
-}
 for ($current_path){
-  s/\/.tests\/inc\/cucumber-steps2po-file\/$current_file_name\.pl//;
+  s/\/.tests\/inc\/cucumber-steps2po-file\/$current_file_name//;
 }
 
 my $po_file_name = $step_file_name;
@@ -133,19 +131,13 @@ if (defined $apply_mode and $apply_mode eq "apply"){
   }
 
   sub remove_line_number{
-    my ($line_tobe_removed_number) = $_[0];
-    #flag line to be removed
+    my $line_tobe_removed_number = $_[0];
+    #Flag line to be removed
     push @lines_tobe_removed, $line_tobe_removed_number;
   }
 
   sub i18n_replace {
-    my ($source) = $_[0];
-    my ($translation) = $_[1];
-    my ($string) = $_[2];
-    my ($line_number) = $_[3];
-
-    print $source . "\n";
-    print $string;
+    my ($source, $translation, $string, $line_number) = @_;
 
     if ($string =~ /$source/ ){
       for ($string){
@@ -163,16 +155,20 @@ if (defined $apply_mode and $apply_mode eq "apply"){
   while(<$in>){
     my $flag = 1;
     my $last_translated_line = 0;
+    my $tobe_translated_candidate = $_;
     foreach my $translated_key (sort {length($b) <=> length($a)} keys %translation_of) {
-      if (($_ !~ /^#|^\s/) and ($_ =~ /\/.+\//)){
+      # if (($_ !~ /^#|^\s/) and ($_ =~ /\/.+\//)){
+      if (($tobe_translated_candidate !~ /^#|^\s/) and ($tobe_translated_candidate =~ /\/.+\//)){
+
         my $current_line = $.;
-        my $translation_result = i18n_replace($translated_key, $translation_of{$translated_key}, $_, $.);
+        # my $translation_result = i18n_replace($translated_key, $translation_of{$translated_key}, $_, $.);
+        my $translation_result = i18n_replace($translated_key, $translation_of{$translated_key}, $tobe_translated_candidate, $.);
         if ($translation_result){
           print $out $translation_result;
           $flag = 0;
 
           if ($current_line == $last_translated_line){
-            #remove line above the current line
+            #Remove line above the current line
             remove_line_number($current_line);
           }
           $last_translated_line = $current_line;
@@ -180,7 +176,8 @@ if (defined $apply_mode and $apply_mode eq "apply"){
       }
     }
     if ($flag == 1){
-      print $out $_;
+      # print $out $_;
+      print $out $tobe_translated_candidate;
     }
   }
   close $out;
@@ -207,12 +204,13 @@ if (defined $apply_mode and $apply_mode eq "reset"){
   exit;
 }
 
+local *FH;
 open (FH, "< $steps_full_path_name") or die "Can't open $steps_full_path_name for read: $!";
 my @lines = <FH>;
 
 if (not $lines[0] eq "#encoding: utf-8\n"){
   print "Error: wrong encoding\n";
-  exit;
+  exit 1;
 }
 
 my @msgid;
@@ -240,7 +238,7 @@ foreach my $line (@lines){
 my @msgid_merge = (@msgid,@msgid_fields);
 my @unique_ids = uniq @msgid_merge;
 
-open my $po_content, '>', $po_directory . "/" . $po_file_name or die "Can't write file.\n";
+open my $po_content, '>', $po_directory . "/" . $po_file_name or die "Can't open $po_file_name for write: $!";;
 
 print $po_content "# $language_name translation of $step_file_name\n";
 foreach my $id (@unique_ids){
@@ -252,7 +250,12 @@ my $number_entries = scalar @unique_ids;
 
 if (close $po_content){
   print "File $po_file_name succefully written with $number_entries entries.\n";
-};
+  exit 0;
+}
+else{
+  print "Error on closing $po_file_name . There should be $number_entries entries in the file.\n";
+  exit 1;
+}
 
 __END__
 =head1 Pogenerator
