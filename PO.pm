@@ -7,13 +7,23 @@ use List::MoreUtils qw(uniq);
 use Locale::Language;
 use File::Copy;
 use Tie::File;
+use 5.010;
+
+use Getopt::Long qw(GetOptions);
+Getopt::Long::Configure qw(gnu_getopt);
+
+my $step_file_name;
+my $language_code = 'en';
+my $apply_mode;
+
+GetOptions(
+    'step|s=s' => \$step_file_name,
+    'lang|l=s' => \$language_code,
+    'mode|m=s' => \$apply_mode,
+) or die "Usage: $0 --step <FILE_NAME>  --lang <LANGUAGE_CODE>|list  --mode apply|reset\n";
 
 use File::Find::Rule;
 use Cwd 'abs_path';
-
-my $step_file_name = shift;
-my $language_code = shift;
-my $apply_mode = shift;
 
 my @lines_tobe_removed;
 
@@ -22,6 +32,16 @@ my $current_file_name = __FILE__;
 
 for ($current_path){
   s/\/.tests\/inc\/cucumber-steps2po-file\/$current_file_name//;
+}
+
+if ($language_code eq 'list'){
+  my @language_codes = all_language_codes();
+  my @language_names = all_language_names();
+
+  foreach my $language (@language_codes) {
+    print $language . " - " . code2language($language) . "\n" ;
+  }
+  exit;
 }
 
 my $po_file_name = $step_file_name;
@@ -35,15 +55,6 @@ if (not defined $language_code){
   exit;
 }
 
-if ($language_code eq 'list'){
-  my @language_codes = all_language_codes();
-  my @language_names = all_language_names();
-
-  foreach my $language (@language_codes) {
-    print $language . " - " . code2language($language) . "\n" ;
-  }
-  exit;
-}
 
 my $language_name = code2language($language_code);
 
@@ -261,9 +272,9 @@ __END__
 =head1 Pogenerator
 Generates PO files for supporting i18n of cucumber features/steps
 =head1 SYNOPSIS
-perl -f pogenerator.pl [in-use step file] [language code:pt|en|<etc>] [ list | apply | reset ]
+Usage perl -f PO.pm --step <FILE_NAME>  --lang <LANGUAGE_CODE>|list  --mode apply|reset
 Options:
-  list                  list supported codes of languages
+  list                  lists supported codes of languages
   apply                 apply a .po file into choosen steps file/language
   reset                 restore in-use steps file back to its source state
 
