@@ -1,4 +1,4 @@
-package Text::Statistics::Latin;
+package Test::BDD::Cucumber::PO;
 
 use warnings;
 use strict;
