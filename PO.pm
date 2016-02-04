@@ -88,10 +88,9 @@ for ($po_directory){
 
 sub reset_steps_file_from_src{
   my $full_path_source_file = $current_path . "/.tests/src/projects/" . $step_prefix . "/step_definitions/$step_file_name";
-  copy($full_path_source_file,$steps_full_path_name) or die "Copy failed: $!";
+  my $reset_result = copy($full_path_source_file,$steps_full_path_name) or die "Copy failed: $!";
 
-  return;
-
+  return $reset_result;
 }
 
 if (defined $apply_mode and $apply_mode eq "apply"){
@@ -207,8 +206,10 @@ if (defined $apply_mode and $apply_mode eq "apply"){
 }
 
 if (defined $apply_mode and $apply_mode eq "reset"){
-  print "Choosen reset option\n";
-  reset_steps_file_from_src();
+  my $reset_result = reset_steps_file_from_src();
+  if ($reset_result){
+    print "Step successfully restored.\n";
+  }
   exit;
 }
 
