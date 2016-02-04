@@ -168,11 +168,9 @@ if (defined $apply_mode and $apply_mode eq "apply"){
     my $last_translated_line = 0;
     my $tobe_translated_candidate = $_;
     foreach my $translated_key (sort {length($b) <=> length($a)} keys %translation_of) {
-      # if (($_ !~ /^#|^\s/) and ($_ =~ /\/.+\//)){
       if (($tobe_translated_candidate !~ /^#|^\s/) and ($tobe_translated_candidate =~ /\/.+\//)){
 
         my $current_line = $.;
-        # my $translation_result = i18n_replace($translated_key, $translation_of{$translated_key}, $_, $.);
         my $translation_result = i18n_replace($translated_key, $translation_of{$translated_key}, $tobe_translated_candidate, $.);
         if ($translation_result){
           print $out $translation_result;
@@ -187,7 +185,6 @@ if (defined $apply_mode and $apply_mode eq "apply"){
       }
     }
     if ($flag == 1){
-      # print $out $_;
       print $out $tobe_translated_candidate;
     }
   }
@@ -272,18 +269,17 @@ __END__
 =head1 Pogenerator
 Generates PO files for supporting i18n of cucumber features/steps
 =head1 SYNOPSIS
-Usage perl -f PO.pm --step <FILE_NAME>  --lang <LANGUAGE_CODE>|list  --mode apply|reset
+Usage perl -f PO.pm --step [FILE_NAME]  --lang [LANGUAGE_CODE|list]  --mode [apply|reset]
 Options:
   list                  lists supported codes of languages
   apply                 apply a .po file into choosen steps file/language
   reset                 restore in-use steps file back to its source state
 
 =head1 DESCRIPTION
-This program will read the given steps file and write out a .po.
+This program will read given Cucumber steps file and write out a .po.
 It also applies a selected language (filled .po) to a steps file (see option apply).
 
 =head1 AUTHOR
-
 Rodrigo Panchiniak Fernandes - L<http://toetec.com.br/>
 
 =head1 CAVEAT
@@ -292,6 +288,6 @@ adjusting them.
 So, if you want to use the code asis, your tree structure shoud follow this one:
 https://github.com/panchiniak/scaffolding
 
-
-
+=head1 ACKNOWLEDGMENTS
+Kindly reviewed by integral, blue_sky, huf, pink_mist. All imperfections left are to be taken as reponsability of the author solely.
 =cut
