@@ -103,7 +103,7 @@ if (defined $apply_mode and $apply_mode eq "apply"){
 
   #Now each msgstr from the PO file will be replaced in the steps file by its
   #msgid match. For doing so, first we need to check the PO file for the step
-  #exists, and if it is prefixed with the desired language. We do just just
+  #exists, and if it is prefixed with the desired language. We do that just
   #by opening it in the read mode.
 
   open (FH, "< $po_directory/$po_file_name") or die "Can't open $steps_full_path_name for read: $!";
