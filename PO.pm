@@ -247,7 +247,7 @@ foreach my $line (@lines){
 my @msgid_merge = (@msgid,@msgid_fields);
 my @unique_ids = uniq @msgid_merge;
 
-open my $po_content, '>', $po_directory . "/" . $po_file_name or die "Can't open $po_file_name for write: $!";;
+open my $po_content, '>', $po_directory . "/" . $po_file_name or die "Can't open $po_file_name for write: $!";
 
 print $po_content "# $language_name translation of $step_file_name\n";
 foreach my $id (@unique_ids){
